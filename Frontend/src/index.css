@@ -1,0 +1,31 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body,
+#root {
+  min-height: 100vh;
+  margin: 0;
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #111827;
+  background:
+    radial-gradient(circle at top, rgba(15, 118, 110, 0.16), transparent 26%),
+    linear-gradient(180deg, #f8fafc 0%, #f5f5f4 100%);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
