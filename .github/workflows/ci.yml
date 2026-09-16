@@ -1,0 +1,62 @@
+name: CI Quality Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  backend-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - name: Install dependencies
+        working-directory: ./Backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Python Compile Check
+        working-directory: ./Backend
+        run: python -m compileall app
+      - name: Lint with ruff
+        working-directory: ./Backend
+        run: ruff check app
+      - name: Type check with mypy
+        working-directory: ./Backend
+        run: mypy app
+      - name: Run tests
+        working-directory: ./Backend
+        run: pytest
+
+  frontend-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './Frontend/package-lock.json'
+      - name: Install dependencies
+        working-directory: ./Frontend
+        run: npm ci
+      - name: Build frontend
+        working-directory: ./Frontend
+        run: npm run build
+      - name: Lint frontend
+        working-directory: ./Frontend
+        run: npm run lint
+
+  docker-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Docker Compose Config
+        run: docker compose config -q

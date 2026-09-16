@@ -1,45 +1,55 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-.venv/
-*.egg-info/
-.mypy_cache/
-.pytest_cache/
-.ruff_cache/
+# =============================================================================
+# Acufy CRM .gitignore
+# =============================================================================
 
-# Node
-node_modules/
-dist/
-dist-ssr/
-*.local
-
-# Environment secrets
+# --- Environment ---
 .env
-.env.*
-!.env.example
-!.env.docker.example
+.env.local
+.env.*.local
 
-# OS / editor
-.DS_Store
-.vscode/*
-!.vscode/extensions.json
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+*.whl
+.venv/
+venv/
+env/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# --- Node ---
+node_modules/
+frontend/dist/
+frontend/build/
+*.tsbuildinfo
+.eslintcache
+
+# --- IDE ---
+.vscode/
 .idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
 
-# Logs
-logs
+# --- Docker ---
+docker-compose.override.yml
+
+# --- Alembic ---
+alembic/versions/*.pyc
+
+# --- Logs ---
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+logs/
