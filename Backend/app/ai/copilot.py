@@ -1,13 +1,15 @@
 from __future__ import annotations
+
 import json
-from uuid import UUID
 from typing import Any
+from uuid import UUID
+
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.ai.llm import chat
-from app.services.analytics import compute_team_pipeline_metrics
 from app.services.ai_approvals import list_pending_approvals
+from app.services.analytics import compute_team_pipeline_metrics
 from app.services.audit import log_audit
-from app.schemas.ai import ForecastInsightEnvelope
 
 
 def _infer_intent_from_message(message: str) -> str:
@@ -76,7 +78,7 @@ async def route_copilot_intent(
         metrics = await compute_team_pipeline_metrics(db, team_id=team_id)
         answer = f"Your total pipeline is {metrics.total_pipeline_value:,.0f} with a weighted value of {metrics.weighted_pipeline_value:,.0f}."
         data = {"metrics": metrics.model_dump(mode='json')}
-    
+
     elif intent == "list_stalled_deals":
         metrics = await compute_team_pipeline_metrics(db, team_id=team_id)
         stalled = metrics.stalled_deals
@@ -85,7 +87,7 @@ async def route_copilot_intent(
         else:
             answer = f"Found {len(stalled)} stalled deals. {stalled[0].name} has been inactive for {stalled[0].stalled_days} days."
             data = {"stalled_deals": [d.model_dump(mode='json') for d in stalled]}
-    
+
     elif intent == "show_approvals_pending":
         approvals = await list_pending_approvals(db, team_id=team_id)
         answer = f"You have {len(approvals)} approvals waiting for your review."

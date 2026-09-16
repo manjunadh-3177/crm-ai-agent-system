@@ -6,12 +6,12 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.ai.llm import completion, LLMProviderError
-from app.models.contact import Contact
+from app.ai.llm import LLMProviderError, completion
+from app.events import emit_event
 from app.models.account import Account
+from app.models.contact import Contact
 from app.models.note import Note
 from app.services.audit import log_audit
-from app.events import emit_event
 
 logger = logging.getLogger(__name__)
 

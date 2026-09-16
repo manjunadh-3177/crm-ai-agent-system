@@ -8,8 +8,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.llm import start_operation_span
-from app.schemas.ai import ContactMemoryResponse
-from app.schemas.ai import DraftEmailResponse
+from app.schemas.ai import ContactMemoryResponse, DraftEmailResponse
 from app.services.ai_email import generate_email_draft_content
 
 

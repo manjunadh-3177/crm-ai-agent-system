@@ -14,7 +14,6 @@ from app.services.agent_runs import get_agent_run_or_404, list_agent_runs
 from app.services.audit import list_audit_logs
 from app.services.seeder import seed_current_workspace
 
-
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 

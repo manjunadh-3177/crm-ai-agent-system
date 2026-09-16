@@ -9,7 +9,6 @@ from app.core.db import get_db
 from app.models import Team
 from app.schemas.crm import TeamRead
 
-
 router = APIRouter(tags=["teams"])
 
 

@@ -11,7 +11,6 @@ from typing import Any
 
 from app.events.redis import publish_event
 
-
 logger = logging.getLogger("acufy.events")
 
 EventHandler = Callable[[str, dict[str, Any]], Any | Awaitable[Any]]

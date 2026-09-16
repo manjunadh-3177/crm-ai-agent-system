@@ -42,7 +42,7 @@ class Document(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     content_format: Mapped[str] = mapped_column(String(20), nullable=False, default="markdown")
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="draft")
 
-    team: Mapped["Team"] = relationship("Team", back_populates="documents")
-    deal: Mapped["Deal | None"] = relationship("Deal", back_populates="documents")
-    contact: Mapped["Contact | None"] = relationship("Contact")
-    account: Mapped["Account | None"] = relationship("Account")
+    team: Mapped[Team] = relationship("Team", back_populates="documents")
+    deal: Mapped[Deal | None] = relationship("Deal", back_populates="documents")
+    contact: Mapped[Contact | None] = relationship("Contact")
+    account: Mapped[Account | None] = relationship("Account")

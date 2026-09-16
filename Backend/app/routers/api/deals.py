@@ -5,15 +5,16 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.ai.agents.proposal_agent import run_proposal_agent
 from app.core.auth import AuthContext, get_auth_context
 from app.core.db import get_db
 from app.schemas.crm import (
     BulkDealStageUpdateRequest,
     BulkOperationResponse,
-    DealCreate,
     DealContactRoleCreate,
     DealContactRoleRead,
     DealContactRoleUpdate,
+    DealCreate,
     DealDetailRead,
     DealLineItemCreate,
     DealLineItemUpdate,
@@ -24,23 +25,21 @@ from app.schemas.crm import (
     ProposalDraftResponse,
 )
 from app.services.audit import list_deal_timeline
-from app.services.import_export import bulk_update_deal_stage
 from app.services.deals import (
     add_deal_line_item,
     create_deal,
     create_deal_stakeholder,
+    delete_deal_stakeholder,
     get_deal_or_404,
     list_deal_stakeholders,
     list_deals,
-    delete_deal_stakeholder,
     remove_deal_line_item,
-    update_deal_stakeholder,
     update_deal,
     update_deal_line_item,
     update_deal_stage,
+    update_deal_stakeholder,
 )
-from app.ai.agents.proposal_agent import run_proposal_agent
-
+from app.services.import_export import bulk_update_deal_stage
 
 router = APIRouter(tags=["deals"])
 

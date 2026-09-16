@@ -44,5 +44,5 @@ class SMSMessage(UUIDPrimaryKeyMixin, CreatedAtMixin, Base):
     read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     agent_suggestion: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    team: Mapped["Team"] = relationship("Team")
-    contact: Mapped["Contact | None"] = relationship("Contact")
+    team: Mapped[Team] = relationship("Team")
+    contact: Mapped[Contact | None] = relationship("Contact")

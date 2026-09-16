@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID
 
@@ -18,9 +18,13 @@ from app.schemas.ai import (
     ForecastStageMetric,
     ForecastWinLossMetric,
 )
-from app.schemas.crm import ReportsPerformanceRead, ReportsPipelineRead, ReportsPipelineStageRead, ReportsSummaryRead
+from app.schemas.crm import (
+    ReportsPerformanceRead,
+    ReportsPipelineRead,
+    ReportsPipelineStageRead,
+    ReportsSummaryRead,
+)
 from app.services.seeding import DEFAULT_STAGES, seed_pipeline_data_if_empty
-
 
 STALL_THRESHOLD_DAYS = 14
 TOP_OPEN_DEALS_LIMIT = 5
@@ -43,15 +47,15 @@ def _sum_decimal(values: list[Decimal | None]) -> Decimal:
 
 
 def _get_period_bounds(period: str, *, start_date: date | None = None, end_date: date | None = None) -> tuple[datetime, datetime]:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     today = now.date()
     if period == "custom" and start_date and end_date:
         return (
-            datetime.combine(start_date, datetime.min.time(), tzinfo=timezone.utc),
-            datetime.combine(end_date + timedelta(days=1), datetime.min.time(), tzinfo=timezone.utc),
+            datetime.combine(start_date, datetime.min.time(), tzinfo=UTC),
+            datetime.combine(end_date + timedelta(days=1), datetime.min.time(), tzinfo=UTC),
         )
     if period == "today":
-        start = datetime.combine(today, datetime.min.time(), tzinfo=timezone.utc)
+        start = datetime.combine(today, datetime.min.time(), tzinfo=UTC)
         return start, start + timedelta(days=1)
     if period == "last_7_days":
         return now - timedelta(days=7), now
@@ -60,21 +64,21 @@ def _get_period_bounds(period: str, *, start_date: date | None = None, end_date:
     if period == "last_quarter":
         current_quarter = (now.month - 1) // 3
         if current_quarter == 0:
-            start = datetime(now.year - 1, 10, 1, tzinfo=timezone.utc)
-            end = datetime(now.year, 1, 1, tzinfo=timezone.utc)
+            start = datetime(now.year - 1, 10, 1, tzinfo=UTC)
+            end = datetime(now.year, 1, 1, tzinfo=UTC)
         else:
             start_month = ((current_quarter - 1) * 3) + 1
-            start = datetime(now.year, start_month, 1, tzinfo=timezone.utc)
-            end = datetime(now.year, start_month + 3, 1, tzinfo=timezone.utc)
+            start = datetime(now.year, start_month, 1, tzinfo=UTC)
+            end = datetime(now.year, start_month + 3, 1, tzinfo=UTC)
         return start, end
     if period == "this_year":
-        return datetime(now.year, 1, 1, tzinfo=timezone.utc), datetime(now.year + 1, 1, 1, tzinfo=timezone.utc)
+        return datetime(now.year, 1, 1, tzinfo=UTC), datetime(now.year + 1, 1, 1, tzinfo=UTC)
 
-    month_start = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
+    month_start = datetime(now.year, now.month, 1, tzinfo=UTC)
     if now.month == 12:
-        next_month = datetime(now.year + 1, 1, 1, tzinfo=timezone.utc)
+        next_month = datetime(now.year + 1, 1, 1, tzinfo=UTC)
     else:
-        next_month = datetime(now.year, now.month + 1, 1, tzinfo=timezone.utc)
+        next_month = datetime(now.year, now.month + 1, 1, tzinfo=UTC)
     return month_start, next_month
 
 
@@ -109,7 +113,7 @@ async def compute_team_pipeline_metrics(
             latest_stage_change_by_deal[log.entity_id] = log.created_at
 
     open_deals = [deal for deal in deals if not (deal.stage and deal.stage.is_closed)]
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     today = date.today()
     month_start = today.replace(day=1)
     next_month_start = date(today.year + (1 if today.month == 12 else 0), 1 if today.month == 12 else today.month + 1, 1)
@@ -220,7 +224,7 @@ async def get_reports_summary(
         select(Meeting.id).where(
             Meeting.team_id == team_id,
             Meeting.status == "scheduled",
-            Meeting.starts_at >= datetime.now(timezone.utc),
+            Meeting.starts_at >= datetime.now(UTC),
             Meeting.starts_at < end_at,
         )
     )

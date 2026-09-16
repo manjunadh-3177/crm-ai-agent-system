@@ -47,7 +47,7 @@ class AgentApproval(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     provider_message_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     execution_detail: Mapped[str | None] = mapped_column(String(1000), nullable=True)
 
-    team: Mapped["Team"] = relationship("Team")
-    contact: Mapped["Contact"] = relationship("Contact")
-    deal: Mapped["Deal | None"] = relationship("Deal")
-    draft: Mapped["EmailDraft"] = relationship("EmailDraft", back_populates="approvals")
+    team: Mapped[Team] = relationship("Team")
+    contact: Mapped[Contact] = relationship("Contact")
+    deal: Mapped[Deal | None] = relationship("Deal")
+    draft: Mapped[EmailDraft] = relationship("EmailDraft", back_populates="approvals")

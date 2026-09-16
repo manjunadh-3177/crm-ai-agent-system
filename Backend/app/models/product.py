@@ -32,5 +32,5 @@ class Product(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     currency: Mapped[str] = mapped_column(String(3), nullable=False, default="USD")
     custom_fields: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
 
-    team: Mapped["Team"] = relationship("Team", back_populates="products")
-    line_items: Mapped[list["DealLineItem"]] = relationship("DealLineItem", back_populates="product")
+    team: Mapped[Team] = relationship("Team", back_populates="products")
+    line_items: Mapped[list[DealLineItem]] = relationship("DealLineItem", back_populates="product")

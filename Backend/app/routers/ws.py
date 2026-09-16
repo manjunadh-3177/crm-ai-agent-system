@@ -7,7 +7,6 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from app.core.auth import resolve_websocket_auth_context
 from app.events.ws import manager
 
-
 router = APIRouter()
 
 

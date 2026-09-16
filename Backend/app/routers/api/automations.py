@@ -15,7 +15,6 @@ from app.services.automations import (
     update_rule,
 )
 
-
 router = APIRouter(prefix="/automations", tags=["automations"])
 
 
@@ -65,7 +64,7 @@ async def toggle_rule(
     # First, get the current rule to find its state
     from app.services.automations import get_rule_or_404
     rule = await get_rule_or_404(db, rule_id, auth.team_id)
-    
+
     payload = AutomationRuleUpdate(is_enabled=not rule.is_enabled)
     return await update_rule(
         db,

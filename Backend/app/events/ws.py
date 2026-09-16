@@ -6,14 +6,13 @@ import asyncio
 import json
 import logging
 from collections import defaultdict
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable
 from typing import Any
 from uuid import UUID
 
 from fastapi import WebSocket
 
 from app.events.redis import EVENT_CHANNEL, EVENT_SOURCE_ID, get_redis_client
-
 
 logger = logging.getLogger("acufy.events.ws")
 

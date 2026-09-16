@@ -1,22 +1,21 @@
-from datetime import date, datetime, timedelta, UTC
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.models import (
     Account,
+    AgentApproval,
+    AuditLog,
     Contact,
     Deal,
     DealStage,
-    Task,
     Meeting,
-    AgentApproval,
-    AuditLog,
-    Product,
+    Task,
     User,
 )
 from app.services.products import seed_demo_products_if_empty
@@ -176,7 +175,7 @@ async def seed_starter_data_if_empty(session: AsyncSession, team_id: UUID, user_
             session.add(stage)
             stages.append(stage)
         await session.flush()
-    
+
     stage_map = {s.name: s for s in stages}
 
     # 2. Accounts
@@ -194,33 +193,33 @@ async def seed_starter_data_if_empty(session: AsyncSession, team_id: UUID, user_
 
     # 4. Deals
     d1 = Deal(
-        team_id=team_id, 
-        account_id=acc1.id, 
-        contact_id=c1.id, 
-        name="Arc Reactor Expansion", 
-        amount=Decimal("50000.00"), 
-        probability=80, 
+        team_id=team_id,
+        account_id=acc1.id,
+        contact_id=c1.id,
+        name="Arc Reactor Expansion",
+        amount=Decimal("50000.00"),
+        probability=80,
         stage_id=stage_map["Proposal"].id,
         owner_user_id=user_id,
         expected_close_date=date.today() + timedelta(days=30)
     )
     d2 = Deal(
-        team_id=team_id, 
-        account_id=acc2.id, 
-        contact_id=c2.id, 
-        name="Bat-Gadget Pilot", 
-        amount=Decimal("15000.00"), 
-        probability=40, 
+        team_id=team_id,
+        account_id=acc2.id,
+        contact_id=c2.id,
+        name="Bat-Gadget Pilot",
+        amount=Decimal("15000.00"),
+        probability=40,
         stage_id=stage_map["Qualified"].id,
         owner_user_id=user_id,
         expected_close_date=date.today() + timedelta(days=60)
     )
     d3 = Deal(
-        team_id=team_id, 
-        contact_id=c3.id, 
-        name="Freelance Photography Contract", 
-        amount=Decimal("2000.00"), 
-        probability=10, 
+        team_id=team_id,
+        contact_id=c3.id,
+        name="Freelance Photography Contract",
+        amount=Decimal("2000.00"),
+        probability=10,
         stage_id=stage_map["Lead"].id,
         owner_user_id=user_id,
         expected_close_date=date.today() + timedelta(days=14)

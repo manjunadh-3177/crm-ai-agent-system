@@ -22,7 +22,6 @@ from app.schemas.crm import (
 )
 from app.services.audit import log_audit
 
-
 DECIMAL_ZERO = Decimal("0.00")
 
 

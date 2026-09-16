@@ -1,10 +1,10 @@
 """Model package exports."""
 
 from app.models.account import Account
-from app.models.automation import AutomationRule
 from app.models.agent_approval import AgentApproval
 from app.models.agent_run import AgentRun
 from app.models.audit_log import AuditLog
+from app.models.automation import AutomationRule
 from app.models.contact import Contact
 from app.models.deal import Deal
 from app.models.deal_contact_role import DealContactRole

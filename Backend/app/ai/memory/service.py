@@ -16,7 +16,6 @@ from sqlalchemy.orm import selectinload
 from app.models import AgentApproval, AgentRun, AuditLog, Contact, Deal, EmailDraft
 from app.schemas.ai import ContactMemoryResponse
 
-
 _CACHE_TTL_SECONDS = 60
 _memory_cache: dict[str, tuple[float, ContactMemoryResponse]] = {}
 _TOPIC_STOP_WORDS = {

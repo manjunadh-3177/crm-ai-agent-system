@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import base64
-from datetime import datetime, timedelta, timezone
 import logging
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 import httpx
@@ -14,17 +14,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.config import get_settings
+from app.events import emit_event
 from app.jobs import _get_worker_runtime_health, enqueue_background_job
 from app.models import AgentApproval, EmailMessage
-from app.events import emit_event
 from app.providers.messaging import get_email_provider
 from app.providers.messaging.base import EmailSendResult
-from app.providers.messaging.stub import StubEmailProvider
 from app.schemas.ai import AgentApprovalDecisionResponse, AgentApprovalListItem
 from app.services.audit import log_audit
 from app.services.notifications import create_notification
 from app.services.sms_content import build_sms_from_email_content
-
 
 logger = logging.getLogger("acufy.services.ai_approvals")
 
@@ -35,7 +33,7 @@ STALE_SEND_TIMEOUT = timedelta(minutes=5)
 
 def build_unsubscribe_token(*, team_id: UUID, contact_id: UUID) -> str:
     """Create a compact unsubscribe token for approval-bound outbound drafts."""
-    raw = f"{team_id}:{contact_id}".encode("utf-8")
+    raw = f"{team_id}:{contact_id}".encode()
     return base64.urlsafe_b64encode(raw).decode("ascii").rstrip("=")
 
 
@@ -104,7 +102,7 @@ async def approve_approval(
     approval.status = "approved"
     approval.execution_status = "queued"
     approval.execution_detail = "Queued for email delivery."
-    approval.decided_at = datetime.now(timezone.utc)
+    approval.decided_at = datetime.now(UTC)
     approval.decision_notes = notes
 
     await log_audit(
@@ -326,7 +324,7 @@ async def execute_email_approval(
         result = await _send_approved_email(to_email=to_email, subject=subject, body=body)
     except Exception as exc:
         logger.exception("execute_email_approval: provider exception approval_id=%s", approval.id)
-        approval.executed_at = datetime.now(timezone.utc)
+        approval.executed_at = datetime.now(UTC)
         approval.execution_status = "failed"
         approval.execution_detail = f"Provider exception: {exc}"
         await log_audit(
@@ -352,7 +350,7 @@ async def execute_email_approval(
         )
         return
 
-    approval.executed_at = datetime.now(timezone.utc)
+    approval.executed_at = datetime.now(UTC)
     approval.execution_status = "sent" if result.success else "failed"
     approval.provider_message_id = result.message_id
     approval.execution_detail = " | ".join(
@@ -442,7 +440,7 @@ async def reject_approval(
     """Mark an approval as rejected."""
     approval = await _load_approval_for_update(db, approval_id, team_id=team_id)
     approval.status = "rejected"
-    approval.decided_at = datetime.now(timezone.utc)
+    approval.decided_at = datetime.now(UTC)
     approval.decision_notes = notes
     await log_audit(
         db,
@@ -533,7 +531,7 @@ async def cancel_email_approval_queue(
     if approval.status != "approved" or approval.execution_status not in {"queued", "sending", None}:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only queued or sending emails can be cancelled.")
     approval.execution_status = "cancelled"
-    approval.executed_at = datetime.now(timezone.utc)
+    approval.executed_at = datetime.now(UTC)
     approval.execution_detail = "Delivery cancelled by user before completion."
     await log_audit(
         db,
@@ -563,7 +561,7 @@ async def cancel_email_approval_queue(
 
 async def mark_stale_email_sends_failed(db: AsyncSession, *, team_id: UUID) -> int:
     """Fail approved email sends that have been queued/sending for too long."""
-    cutoff = datetime.now(timezone.utc) - STALE_SEND_TIMEOUT
+    cutoff = datetime.now(UTC) - STALE_SEND_TIMEOUT
     result = await db.execute(
         select(AgentApproval).where(
             AgentApproval.team_id == team_id,
@@ -576,7 +574,7 @@ async def mark_stale_email_sends_failed(db: AsyncSession, *, team_id: UUID) -> i
     approvals = list(result.scalars().all())
     for approval in approvals:
         approval.execution_status = "failed"
-        approval.executed_at = datetime.now(timezone.utc)
+        approval.executed_at = datetime.now(UTC)
         approval.execution_detail = "Timed out after 5 minutes without worker completion. Retry send is available."
         await log_audit(
             db,

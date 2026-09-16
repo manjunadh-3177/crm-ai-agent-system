@@ -24,7 +24,6 @@ from app.services.agent_runs import create_agent_run
 from app.services.ai_email import persist_draft_and_approval
 from app.services.audit import log_audit
 
-
 GRAPH_NAME = "swarm_followup"
 
 

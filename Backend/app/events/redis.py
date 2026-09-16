@@ -5,11 +5,10 @@ from __future__ import annotations
 import json
 import logging
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from app.core.config import get_settings
-
 
 logger = logging.getLogger("acufy.events.redis")
 EVENT_CHANNEL = "acufy:events"
@@ -47,7 +46,7 @@ async def publish_event(name: str, payload: dict[str, Any]) -> bool:
     envelope = {
         "name": name,
         "payload": payload,
-        "emitted_at": datetime.now(timezone.utc).isoformat(),
+        "emitted_at": datetime.now(UTC).isoformat(),
         "source_id": EVENT_SOURCE_ID,
     }
 

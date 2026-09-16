@@ -180,6 +180,7 @@ def build_lead_summary_prompt(context: dict[str, Any]) -> str:
 import ast
 import re
 
+
 def parse_json_response(raw_text: str, schema: type, allowed_priorities: set[str] | None = None):
     """Parse and validate a JSON-only model response with multiple fallbacks."""
     # 1. Clean markdown code blocks if present
@@ -202,12 +203,12 @@ def parse_json_response(raw_text: str, schema: type, allowed_priorities: set[str
         except (ValueError, SyntaxError):
             # 4. Regex fallback for subject/body/summary if it's a mess
             data = {}
-            
+
             # Look for "subject": "..." or 'subject': '...'
             subject_match = re.search(r"['\"]subject['\"]\s*:\s*['\"](.*?)['\"](?:\s*,|\s*})", cleaned_text, re.DOTALL | re.IGNORECASE)
             if subject_match:
                 data["subject"] = subject_match.group(1)
-            
+
             # Look for "body": "..." or 'body': '...'
             body_match = re.search(r"['\"]body['\"]\s*:\s*['\"](.*?)['\"](?:\s*,|\s*})", cleaned_text, re.DOTALL | re.IGNORECASE)
             if body_match:
@@ -239,7 +240,7 @@ def parse_json_response(raw_text: str, schema: type, allowed_priorities: set[str
         # Fill in missing defaults for tone if schema expects it
         if "tone" not in data and "tone" in schema.model_fields:
             data["tone"] = "professional"
-            
+
         response = schema(**data)
     except Exception as exc:
         raise HTTPException(

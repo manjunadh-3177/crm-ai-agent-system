@@ -7,17 +7,16 @@ from app.jobs import (
     ARQ_AVAILABLE,
     _redis_settings,
     auto_contact_draft_job,
-    csv_import_job,
     crm_graph_job,
+    csv_import_job,
     notification_job,
+    nurture_scan_job,
     opportunity_watch_job,
     proposal_job,
-    nurture_scan_job,
     research_job,
-    send_sms_job,
     send_email_job,
+    send_sms_job,
 )
-
 
 if ARQ_AVAILABLE:
 

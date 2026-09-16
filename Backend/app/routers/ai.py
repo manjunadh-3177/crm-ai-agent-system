@@ -5,18 +5,18 @@ from uuid import UUID
 from fastapi import APIRouter, Body, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.ai.llm import chat
 from app.ai.agents.forecast_agent import generate_forecast
 from app.ai.agents.nurturer_agent import generate_nurture_now, get_nurture_status, run_nurturer_scan
 from app.ai.agents.scheduler_agent import book_slot, suggest_slots
+from app.ai.llm import chat
 from app.ai.memory import get_contact_memory
 from app.core.auth import AuthContext, get_auth_context, requires_role
 from app.core.db import get_db
 from app.schemas.ai import (
-    AITestRequest,
-    AITestResponse,
     AgentApprovalDecisionResponse,
     AgentApprovalListItem,
+    AITestRequest,
+    AITestResponse,
     ApprovalDecisionRequest,
     ContactMemoryResponse,
     DraftEmailRequest,
@@ -41,10 +41,8 @@ from app.services.ai_approvals import (
     reject_approval,
     retry_email_approval,
 )
-from app.services.ai_email import generate_email_draft
-from app.services.ai_email import update_email_draft_for_approval
+from app.services.ai_email import generate_email_draft, update_email_draft_for_approval
 from app.services.ai_summary import generate_lead_summary
-
 
 router = APIRouter(tags=["ai"])
 

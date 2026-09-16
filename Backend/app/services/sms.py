@@ -18,12 +18,15 @@ from app.ai.agents.scheduler_agent import suggest_slots
 from app.core.config import get_settings
 from app.events import emit_event
 from app.models import Contact, Deal, SMSMessage, Team
-from app.schemas.crm import SMSAssignContactRequest, SMSCreateTaskRequest, SMSMessageSend, TaskCreate
+from app.schemas.crm import (
+    SMSAssignContactRequest,
+    SMSCreateTaskRequest,
+    SMSMessageSend,
+    TaskCreate,
+)
 from app.services.audit import log_audit
 from app.services.notifications import create_notification
-from app.services.sms_content import build_sms_from_email_content
 from app.services.tasks import create_task
-
 
 TWILIO_API_BASE = "https://api.twilio.com/2010-04-01"
 STOP_WORDS = {"stop", "unsubscribe", "cancel", "end", "quit", "stopall"}

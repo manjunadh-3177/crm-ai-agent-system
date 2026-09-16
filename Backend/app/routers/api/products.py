@@ -9,10 +9,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import AuthContext, get_auth_context
 from app.core.db import get_db
-from app.schemas.crm import BulkDeleteRequest, BulkOperationResponse, ProductCreate, ProductRead, ProductUpdate
+from app.schemas.crm import (
+    BulkDeleteRequest,
+    BulkOperationResponse,
+    ProductCreate,
+    ProductRead,
+    ProductUpdate,
+)
 from app.services.import_export import bulk_delete_products
 from app.services.products import create_product, delete_product, list_products, update_product
-
 
 router = APIRouter(tags=["products"])
 

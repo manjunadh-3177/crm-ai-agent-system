@@ -26,7 +26,7 @@ class Contact(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     phone: Mapped[str | None] = mapped_column(String(50), nullable=True)
     consent_sms: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     consent_email: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    
+
     # Metadata for Lead Scoring
     job_title: Mapped[str | None] = mapped_column(String(100), nullable=True)
     description: Mapped[str | None] = mapped_column(String(1000), nullable=True)

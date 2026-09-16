@@ -8,8 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.auth import AuthContext, get_auth_context
 from app.core.db import get_db
 from app.schemas.crm import AccountDetailRead, AccountRead
-from app.services.accounts import get_account_detail_or_404, list_accounts as list_accounts_service
-
+from app.services.accounts import get_account_detail_or_404
+from app.services.accounts import list_accounts as list_accounts_service
 
 router = APIRouter(tags=["accounts"])
 

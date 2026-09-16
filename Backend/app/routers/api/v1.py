@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -12,30 +12,32 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.ai.llm import get_ai_health
 from app.core.auth import AuthContext, get_auth_context, requires_role
 from app.core.db import get_db
-from app.jobs import get_job_snapshot, get_worker_status_snapshot, list_team_jobs_snapshot
-from app.jobs import enqueue_background_job
+from app.jobs import (
+    enqueue_background_job,
+    get_job_snapshot,
+    get_worker_status_snapshot,
+    list_team_jobs_snapshot,
+)
 from app.models import AgentRun, AuditLog, Notification
-from app.schemas.crm import ProposalDraftResponse
-from app.services.agent_runs import list_agent_runs
-from app.services.swarm_agents import run_swarm_agent
-
 from app.routers.api.accounts import router as accounts_router
+from app.routers.api.activity import router as activity_router
+from app.routers.api.automations import router as automations_router
 from app.routers.api.contacts import router as contacts_router
 from app.routers.api.deals import router as deals_router
+from app.routers.api.emails import router as emails_router
 from app.routers.api.import_export import router as import_export_router
+from app.routers.api.meetings import router as meetings_router
+from app.routers.api.notes import router as notes_router
+from app.routers.api.notifications import router as notifications_router
 from app.routers.api.products import router as products_router
 from app.routers.api.reports import router as reports_router
 from app.routers.api.sms import router as sms_router
 from app.routers.api.stages import router as stages_router
-from app.routers.api.teams import router as teams_router
-from app.routers.api.meetings import router as meetings_router
 from app.routers.api.tasks import router as tasks_router
-from app.routers.api.notes import router as notes_router
-from app.routers.api.activity import router as activity_router
-from app.routers.api.automations import router as automations_router
-from app.routers.api.emails import router as emails_router
-from app.routers.api.notifications import router as notifications_router
-
+from app.routers.api.teams import router as teams_router
+from app.schemas.crm import ProposalDraftResponse
+from app.services.agent_runs import list_agent_runs
+from app.services.swarm_agents import run_swarm_agent
 
 router = APIRouter(prefix="/api/v1")
 router.include_router(teams_router)
@@ -94,7 +96,7 @@ async def get_swarm_status(
     ai_health = get_ai_health()
 
     return {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "health": {
             "redis": queue_snapshot["health"].get("redis", "unknown"),
             "workers": queue_snapshot["health"].get("workers", "unknown"),
@@ -277,11 +279,11 @@ def _build_agent_snapshot(name: str, config: dict, logs: list[AuditLog], runs: l
     relevant_actions = config["success_actions"] | config["failure_actions"]
     agent_logs = [log for log in logs if log.action in relevant_actions]
     agent_runs = [run for run in runs if run.graph_name == name]
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     today = now.date()
     last_log = agent_logs[0] if agent_logs else None
     last_run = agent_runs[0] if agent_runs else None
-    
+
     last_success = next((log for log in agent_logs if log.action in config["success_actions"]), None)
     last_error = next((log for log in agent_logs if log.action in config["failure_actions"]), None)
 
@@ -446,7 +448,7 @@ async def send_test_email(
 ) -> dict:
     """Dev endpoint: sends a test email directly to EMAIL_REDIRECT_TO bypassing all approval logic."""
     from app.core.config import get_settings
-    from app.services.ai_approvals import _send_approved_email, UNSUBSCRIBE_FOOTER
+    from app.services.ai_approvals import UNSUBSCRIBE_FOOTER, _send_approved_email
 
     settings = get_settings()
     target = (settings.email_redirect_to or "").strip() if settings.email_redirect_enabled else None

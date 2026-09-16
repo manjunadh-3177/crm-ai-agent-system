@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any
 from uuid import UUID
 
@@ -114,8 +113,8 @@ async def _hydrate_agent_runs(db: AsyncSession, runs: list[AgentRun], *, team_id
 
     for run in runs:
         run_id = str(run.id)
-        setattr(run, "logs", sorted(logs_by_run_id.get(run_id, []), key=lambda item: item.time, reverse=True))
-        setattr(run, "approval_id", approval_by_run_id.get(run_id))
+        run.logs = sorted(logs_by_run_id.get(run_id, []), key=lambda item: item.time, reverse=True)
+        run.approval_id = approval_by_run_id.get(run_id)
 
 
 def _extract_log_message(action: str, metadata: dict[str, Any]) -> str:

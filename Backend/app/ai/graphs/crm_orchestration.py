@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import time
-from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 from uuid import UUID
 
@@ -21,12 +20,11 @@ from app.ai.agents.proposal_agent import run_proposal_agent
 from app.ai.agents.research_agent import research_contact
 from app.ai.agents.scheduler_agent import suggest_slots
 from app.events import emit_event
-from app.models import AgentApproval, AgentRun, AuditLog, Contact, Deal, EmailDraft, Task
+from app.models import AgentRun, AuditLog, Contact, Deal, Task
 from app.schemas.ai import DraftEmailResponse
 from app.services.agent_runs import create_agent_run
 from app.services.ai_email import generate_email_draft_content, persist_draft_and_approval
 from app.services.audit import log_audit
-
 
 NEW_LEAD_GRAPH = "NewLeadGraph"
 DEAL_RESCUE_GRAPH = "DealRescueGraph"

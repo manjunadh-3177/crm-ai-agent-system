@@ -14,7 +14,6 @@ from app.schemas.crm import ProposalDraftResponse
 from app.services.audit import log_audit
 from app.services.proposals import generate_deal_proposal
 
-
 logger = logging.getLogger(__name__)
 
 

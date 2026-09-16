@@ -19,7 +19,6 @@ from app.services.meetings import (
     update_meeting,
 )
 
-
 router = APIRouter(prefix="/meetings", tags=["meetings"])
 
 

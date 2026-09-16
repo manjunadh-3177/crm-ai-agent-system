@@ -7,7 +7,6 @@ from uuid import uuid4
 
 from app.providers.messaging.base import EmailProvider, EmailSendResult
 
-
 logger = logging.getLogger("acufy.providers.email.stub")
 
 

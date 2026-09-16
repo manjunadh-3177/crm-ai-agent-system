@@ -15,7 +15,6 @@ from app.services.notes import (
     update_note,
 )
 
-
 router = APIRouter(prefix="/notes", tags=["notes"])
 
 

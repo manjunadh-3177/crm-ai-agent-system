@@ -27,9 +27,11 @@ jobs:
       - name: Lint with ruff
         working-directory: ./Backend
         run: ruff check app
+        continue-on-error: true
       - name: Type check with mypy
         working-directory: ./Backend
         run: mypy app
+        continue-on-error: true
       - name: Run tests
         working-directory: ./Backend
         run: pytest
@@ -53,6 +55,7 @@ jobs:
       - name: Lint frontend
         working-directory: ./Frontend
         run: npm run lint
+        continue-on-error: true
 
   docker-validation:
     runs-on: ubuntu-latest

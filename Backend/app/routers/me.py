@@ -1,12 +1,12 @@
 """Current auth context route."""
 
-from fastapi import APIRouter, Request
 from typing import Any
 
-from app.core.auth import AuthContext, resolve_request_auth_context
+from fastapi import APIRouter, HTTPException, Request
+
+from app.core.auth import resolve_request_auth_context
 from app.core.db import AsyncSessionLocal
 from app.services.seeding import seed_starter_data_if_empty
-from fastapi import HTTPException
 
 router = APIRouter(tags=["auth"])
 

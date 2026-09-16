@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import csv
 import io
+from collections.abc import Callable
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import Any, Callable
+from typing import Any
 from uuid import UUID
 
 from fastapi import HTTPException, UploadFile, status

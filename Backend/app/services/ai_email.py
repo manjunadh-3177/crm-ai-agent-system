@@ -2,31 +2,29 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
 import json
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import select
-from sqlalchemy.orm import selectinload
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.ai.llm import chat, start_trace_scope
-from app.events import emit_event
 from fastapi import HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.ai.agents.compliance_agent import run_compliance_agent
+from app.ai.llm import chat, start_trace_scope
+from app.events import emit_event
 from app.models import Account, AgentApproval, Contact, EmailDraft
 from app.schemas.ai import DraftEmailResponse, DraftEmailUpdateRequest
-from app.services.audit import log_audit
+from app.services.ai_approvals import append_unsubscribe_footer
 from app.services.ai_summary import (
     build_contact_context,
     load_contact_deal_context,
     parse_json_response,
 )
+from app.services.audit import log_audit
 from app.services.notifications import create_notification
-from app.services.ai_approvals import append_unsubscribe_footer
-
 
 AUTO_CONTACT_DRAFT_WINDOW_HOURS = 24
 

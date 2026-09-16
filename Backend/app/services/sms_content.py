@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import re
 
-
 UNSUBSCRIBE_LINE_RE = re.compile(r"^to stop emails, click unsubscribe:\s*https?://\S+\s*$", re.IGNORECASE)
 SIGNATURE_START_RE = re.compile(r"^(thanks|thank you|best|best regards|kind regards|regards|sincerely|cheers)[,!\s]*$", re.IGNORECASE)
 

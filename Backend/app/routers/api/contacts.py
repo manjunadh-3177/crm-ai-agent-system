@@ -7,10 +7,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import AuthContext, get_auth_context
 from app.core.db import get_db
-from app.schemas.crm import BulkDeleteRequest, BulkOperationResponse, ContactCreate, ContactRead, ContactUpdate
+from app.schemas.crm import (
+    BulkDeleteRequest,
+    BulkOperationResponse,
+    ContactCreate,
+    ContactRead,
+    ContactUpdate,
+)
 from app.services.contacts import create_contact, delete_contact, list_contacts, update_contact
 from app.services.import_export import bulk_delete_contacts
-
 
 router = APIRouter(tags=["contacts"])
 

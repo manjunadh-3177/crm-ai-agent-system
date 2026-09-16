@@ -1,8 +1,8 @@
 """Acufy CRM FastAPI application entry point."""
 
 import asyncio
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,8 +16,8 @@ from app.events.ws import start_redis_ws_bridge, stop_redis_ws_bridge
 from app.routers import health
 from app.routers.admin import router as admin_router
 from app.routers.ai import router as ai_router
-from app.routers.copilot import router as copilot_router
 from app.routers.api.v1 import router as api_v1_router
+from app.routers.copilot import router as copilot_router
 from app.routers.me import router as me_router
 from app.routers.ws import router as ws_router
 

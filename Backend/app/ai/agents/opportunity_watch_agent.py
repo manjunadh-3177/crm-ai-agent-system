@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID
 
@@ -16,7 +16,6 @@ from app.events import emit_event
 from app.models import AuditLog, Deal, Task
 from app.services.audit import log_audit
 from app.services.notifications import create_notification
-
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +115,7 @@ async def _latest_activity_by_entity(db: AsyncSession, *, team_id: UUID) -> dict
 
 
 def _signals_for_deal(deal: Deal, latest_activity: dict[str, datetime]) -> list[OpportunitySignal]:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     last_deal_touch = _aware(latest_activity.get(f"deal:{deal.id}") or deal.updated_at)
     idle_days = max((now - last_deal_touch).days, 0)
     signals: list[OpportunitySignal] = []
@@ -178,7 +177,7 @@ def _signals_for_deal(deal: Deal, latest_activity: dict[str, datetime]) -> list[
 
 
 async def _recent_signal_exists(db: AsyncSession, *, team_id: UUID, deal_id: UUID, kind: str) -> bool:
-    cutoff = datetime.now(timezone.utc) - timedelta(days=1)
+    cutoff = datetime.now(UTC) - timedelta(days=1)
     result = await db.execute(
         select(AuditLog.id)
         .where(
@@ -227,7 +226,7 @@ async def _create_signal_outputs(
         contact_id=signal.deal.contact_id,
         account_id=signal.deal.account_id,
         assigned_user_id=str(signal.deal.owner_user_id) if signal.deal.owner_user_id else None,
-        due_at=datetime.now(timezone.utc) + timedelta(days=1),
+        due_at=datetime.now(UTC) + timedelta(days=1),
     )
     db.add(task)
     await db.flush()
@@ -283,4 +282,4 @@ async def _finish(
 
 
 def _aware(value: datetime) -> datetime:
-    return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+    return value if value.tzinfo else value.replace(tzinfo=UTC)

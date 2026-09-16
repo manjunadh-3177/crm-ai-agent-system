@@ -12,7 +12,6 @@ from app.core.db import AsyncSessionLocal
 from app.events import EVENT_CHANNEL
 from app.events.redis import get_redis_client
 
-
 logger = logging.getLogger("acufy.worker.events")
 
 

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
 from uuid import UUID
 
 from sqlalchemy import select
@@ -20,7 +19,7 @@ async def get_activity_feed(
     limit: int = 50,
 ) -> list[ActivityFeedItem]:
     """Get unified activity feed combining audit logs and notes."""
-    
+
     # Get recent audit logs
     logs_query = (
         select(AuditLog)
@@ -30,7 +29,7 @@ async def get_activity_feed(
     )
     logs_result = await db.execute(logs_query)
     logs = logs_result.scalars().all()
-    
+
     # Get recent notes
     notes_query = (
         select(Note)
@@ -40,10 +39,10 @@ async def get_activity_feed(
     )
     notes_result = await db.execute(notes_query)
     notes = notes_result.scalars().all()
-    
+
     # Combine and sort
     items: list[ActivityFeedItem] = []
-    
+
     for log in logs:
         # Avoid showing "note.created" etc as audit logs if we already show the note itself,
         # but the prompt says combining recent audit_logs and recent notes. Let's include everything.
@@ -61,7 +60,7 @@ async def get_activity_feed(
                 metadata_json=log.metadata_json,
             )
         )
-        
+
     for note in notes:
         items.append(
             ActivityFeedItem(
@@ -76,7 +75,7 @@ async def get_activity_feed(
                 metadata_json=None,
             )
         )
-        
+
     # Sort by time descending and limit
     items.sort(key=lambda x: x.time, reverse=True)
     return items[:limit]

@@ -13,7 +13,7 @@ Supported actions:
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
@@ -23,8 +23,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.events import emit_event
 from app.models.automation import AutomationRule
-from app.schemas.crm import AutomationRuleCreate, AutomationRuleUpdate, NoteCreate, TaskCreate
 from app.schemas.ai import DraftEmailResponse
+from app.schemas.crm import AutomationRuleCreate, AutomationRuleUpdate, NoteCreate, TaskCreate
 from app.services.audit import log_audit
 
 logger = logging.getLogger(__name__)
@@ -269,13 +269,14 @@ async def _execute_action(
     # ── create_meeting ────────────────────────────────────────────────────────
     elif action == "create_meeting":
         from datetime import timedelta
-        from app.services.meetings import create_meeting
+
         from app.schemas.crm import MeetingCreate
+        from app.services.meetings import create_meeting
         contact_id = action_payload.get("contact_id") or payload.get("contact_id")
         if not contact_id:
             logger.warning("Rule %s: create_meeting skipped — no contact_id", rule.id)
             return
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         offset_days = int(action_payload.get("days_from_now", 1))
         starts = now.replace(hour=10, minute=0, second=0, microsecond=0) + timedelta(days=offset_days)
         ends = starts + timedelta(minutes=int(action_payload.get("duration_minutes", 30)))
@@ -380,7 +381,7 @@ async def run_trigger(
 
             # Update execution tracking
             rule.run_count = (rule.run_count or 0) + 1
-            rule.last_run_at = datetime.now(timezone.utc)
+            rule.last_run_at = datetime.now(UTC)
 
             await log_audit(
                 db,

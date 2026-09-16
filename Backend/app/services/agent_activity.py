@@ -9,7 +9,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import AuditLog
 from app.services.audit import list_audit_logs_by_actions
 
-
 FOLLOWUP_AGENT_ACTIONS = [
     "agent.followup.triggered",
     "agent.followup.no_action",

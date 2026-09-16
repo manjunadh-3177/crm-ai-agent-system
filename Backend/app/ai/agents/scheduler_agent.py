@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
-import re
 from uuid import UUID
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -17,7 +17,6 @@ from app.models import Account, Contact, Deal, Meeting, Team
 from app.schemas.crm import MeetingCreate
 from app.services.audit import log_audit
 from app.services.meetings import create_meeting
-
 
 DEFAULT_WORKING_DAYS = "Mon-Fri"
 DEFAULT_START = "09:00"

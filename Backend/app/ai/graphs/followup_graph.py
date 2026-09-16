@@ -12,15 +12,14 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.ai.llm import start_trace_scope
 from app.ai.agents.compliance_agent import run_compliance_agent
-from app.models import Deal
+from app.ai.llm import start_trace_scope
 from app.events import emit_event
+from app.models import Deal
 from app.schemas.ai import DraftEmailResponse
 from app.services.agent_runs import create_agent_run
 from app.services.ai_email import generate_email_draft_content, persist_draft_and_approval
 from app.services.audit import log_audit
-
 
 GRAPH_NAME = "followup_graph"
 

@@ -2,11 +2,13 @@
 
 import logging
 from uuid import UUID
+
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.events import emit_event
 from app.models.contact import Contact
 from app.models.task import Task
 from app.services.audit import log_audit
-from app.events import emit_event
 from app.services.notifications import create_notification
 
 logger = logging.getLogger(__name__)
@@ -26,7 +28,7 @@ def score_contact(contact: Contact) -> tuple[int, str, str]:
     if contact.email:
         score += 30
         reasons.append("Email provided (+30)")
-    
+
     if contact.phone:
         score += 20
         reasons.append("Phone provided (+20)")
@@ -65,11 +67,11 @@ async def run_lead_qualifier(db: AsyncSession, contact_id: UUID, team_id: UUID) 
             return
 
         score, tier, reason = score_contact(contact)
-        
+
         contact.lead_score = score
         contact.lead_tier = tier
         contact.lead_reason = reason
-        
+
         await db.flush()
 
         # Audit log
@@ -95,7 +97,7 @@ async def run_lead_qualifier(db: AsyncSession, contact_id: UUID, team_id: UUID) 
             )
             db.add(new_task)
             await db.flush()
-            
+
             await log_audit(
                 db,
                 action="task.created",

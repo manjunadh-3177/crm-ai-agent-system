@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
-from app.core.db import get_db
-from app.core.auth import AuthContext, get_auth_context
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.ai.copilot import route_copilot_intent
+from app.core.auth import AuthContext, get_auth_context
+from app.core.db import get_db
 
 router = APIRouter(tags=["copilot"])
 

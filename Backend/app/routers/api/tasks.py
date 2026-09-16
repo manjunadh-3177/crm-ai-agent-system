@@ -17,7 +17,6 @@ from app.services.tasks import (
     update_task,
 )
 
-
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 

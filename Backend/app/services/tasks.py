@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.events import emit_event
-from app.models import Account, Contact, Deal, Task, Team
+from app.models import Account, Contact, Deal, Task
 from app.schemas.crm import TaskCreate, TaskUpdate
 from app.services.audit import log_audit
 from app.services.notifications import create_notification
@@ -35,23 +35,23 @@ async def list_tasks(
 ) -> list[Task]:
     """Return tasks for a team."""
     query = select(Task).options(*_detail_options()).where(Task.team_id == team_id)
-    
+
     if status_filter:
         query = query.where(Task.status == status_filter)
     if priority_filter:
         query = query.where(Task.priority == priority_filter)
     if assigned_user_id:
         query = query.where(Task.assigned_user_id == assigned_user_id)
-        
+
     query = query.order_by(Task.due_at.nulls_last(), Task.created_at.desc())
     result = await db.execute(query)
     return list(result.scalars().all())
 
 
 async def get_my_tasks(
-    db: AsyncSession, 
-    *, 
-    team_id: UUID, 
+    db: AsyncSession,
+    *,
+    team_id: UUID,
     user_id: str,
     limit: int = 5
 ) -> list[Task]:
@@ -90,11 +90,11 @@ async def create_task(
 ) -> Task:
     """Create a new task."""
     await _validate_task_payload(db, payload, team_id=team_id)
-    
+
     task = Task(team_id=team_id, **payload.model_dump())
     db.add(task)
     await db.flush()
-    
+
     await log_audit(
         db,
         action="task.created",
@@ -107,7 +107,7 @@ async def create_task(
     )
 
     # Notification for overdue task
-    if task.due_at and task.due_at < datetime.now(timezone.utc) and task.status == "open":
+    if task.due_at and task.due_at < datetime.now(UTC) and task.status == "open":
         await create_notification(
             db,
             team_id=team_id,
@@ -119,10 +119,10 @@ async def create_task(
         )
 
     await db.commit()
-    
+
     # Emit event for real-time updates
     await emit_event("task.created", {"id": str(task.id), "team_id": str(team_id)})
-    
+
     return await get_task_or_404(db, task.id, team_id=team_id)
 
 
@@ -137,7 +137,7 @@ async def update_task(
     """Update an existing task."""
     task = await get_task_or_404(db, task_id, team_id=team_id)
     data = payload.model_dump(exclude_unset=True)
-    
+
     # For validation, we need a complete picture if relations are changing
     if any(k in data for k in ["contact_id", "deal_id", "account_id"]):
         validation_payload = TaskCreate(
@@ -152,10 +152,10 @@ async def update_task(
             assigned_user_id=data.get("assigned_user_id", task.assigned_user_id),
         )
         await _validate_task_payload(db, validation_payload, team_id=team_id)
-    
+
     for field, value in data.items():
         setattr(task, field, value)
-        
+
     await log_audit(
         db,
         action="task.updated",
@@ -168,7 +168,7 @@ async def update_task(
     )
 
     # Notification for overdue task
-    if task.due_at and task.due_at < datetime.now(timezone.utc) and task.status == "open":
+    if task.due_at and task.due_at < datetime.now(UTC) and task.status == "open":
         await create_notification(
             db,
             team_id=team_id,
@@ -180,9 +180,9 @@ async def update_task(
         )
 
     await db.commit()
-    
+
     await emit_event("task.updated", {"id": str(task.id), "team_id": str(team_id)})
-    
+
     return await get_task_or_404(db, task.id, team_id=team_id)
 
 
@@ -197,9 +197,9 @@ async def mark_done(
     task = await get_task_or_404(db, task_id, team_id=team_id)
     if task.status == "done":
         return task
-        
+
     task.status = "done"
-    
+
     await log_audit(
         db,
         action="task.completed",
@@ -211,12 +211,12 @@ async def mark_done(
         metadata={},
     )
     await db.commit()
-    
+
     await emit_event("task.updated", {"id": str(task.id), "team_id": str(team_id)})
-    
+
     from app.services.automations import run_trigger
     await run_trigger(db, "task.completed", {"id": str(task.id), "priority": task.priority, "status": task.status, "contact_id": str(task.contact_id) if task.contact_id else None, "deal_id": str(task.deal_id) if task.deal_id else None, "account_id": str(task.account_id) if task.account_id else None}, team_id)
-    
+
     return task
 
 
@@ -229,7 +229,7 @@ async def delete_task(
 ) -> None:
     """Delete a task."""
     task = await get_task_or_404(db, task_id, team_id=team_id)
-    
+
     await log_audit(
         db,
         action="task.deleted",
@@ -242,7 +242,7 @@ async def delete_task(
     )
     await db.delete(task)
     await db.commit()
-    
+
     await emit_event("task.deleted", {"id": str(task_id), "team_id": str(team_id)})
 
 
@@ -252,12 +252,12 @@ async def _validate_task_payload(db: AsyncSession, payload: TaskCreate, *, team_
         contact = await db.get(Contact, payload.contact_id)
         if contact is None or contact.team_id != team_id:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found.")
-            
+
     if payload.deal_id is not None:
         deal = await db.get(Deal, payload.deal_id)
         if deal is None or deal.team_id != team_id:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Deal not found.")
-            
+
     if payload.account_id is not None:
         account = await db.get(Account, payload.account_id)
         if account is None or account.team_id != team_id:

@@ -38,6 +38,6 @@ class DealLineItem(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     subtotal: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     currency: Mapped[str] = mapped_column(String(3), nullable=False, default="USD")
 
-    team: Mapped["Team"] = relationship("Team", back_populates="deal_line_items")
-    deal: Mapped["Deal"] = relationship("Deal", back_populates="line_items")
-    product: Mapped["Product"] = relationship("Product", back_populates="line_items")
+    team: Mapped[Team] = relationship("Team", back_populates="deal_line_items")
+    deal: Mapped[Deal] = relationship("Deal", back_populates="line_items")
+    product: Mapped[Product] = relationship("Product", back_populates="line_items")

@@ -2,17 +2,16 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import HTTPException, status
+from icalendar import Calendar, Event
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from icalendar import Calendar, Event
 
-from app.events import emit_event
-from app.models import Account, Contact, Deal, Meeting, Team
+from app.models import Account, Contact, Deal, Meeting
 from app.schemas.crm import MeetingCreate, MeetingUpdate
 from app.services.audit import log_audit
 from app.services.notifications import create_notification
@@ -35,12 +34,12 @@ async def list_meetings(
 ) -> list[Meeting]:
     """Return meetings for a team."""
     query = select(Meeting).options(*_detail_options()).where(Meeting.team_id == team_id)
-    
+
     if status_filter:
         query = query.where(Meeting.status == status_filter)
     if type_filter:
         query = query.where(Meeting.meeting_type == type_filter)
-        
+
     query = query.order_by(Meeting.starts_at)
     result = await db.execute(query)
     return list(result.scalars().all())
@@ -48,7 +47,7 @@ async def list_meetings(
 
 async def get_upcoming_meetings(db: AsyncSession, *, team_id: UUID, limit: int = 5) -> list[Meeting]:
     """Return upcoming scheduled meetings."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     query = (
         select(Meeting)
         .options(*_detail_options())
@@ -83,11 +82,11 @@ async def create_meeting(
 ) -> Meeting:
     """Create a new meeting."""
     await _validate_meeting_payload(db, payload, team_id=team_id)
-    
+
     meeting = Meeting(team_id=team_id, **payload.model_dump())
     db.add(meeting)
     await db.flush()
-    
+
     await log_audit(
         db,
         action="meeting.created",
@@ -100,7 +99,7 @@ async def create_meeting(
     )
 
     # Notification for meeting today
-    if meeting.starts_at.date() == datetime.now(timezone.utc).date():
+    if meeting.starts_at.date() == datetime.now(UTC).date():
         await create_notification(
             db,
             team_id=team_id,
@@ -112,7 +111,7 @@ async def create_meeting(
         )
 
     await db.commit()
-    
+
     return await get_meeting_or_404(db, meeting.id, team_id=team_id)
 
 
@@ -127,7 +126,7 @@ async def update_meeting(
     """Update an existing meeting."""
     meeting = await get_meeting_or_404(db, meeting_id, team_id=team_id)
     data = payload.model_dump(exclude_unset=True)
-    
+
     merged = {
         "title": meeting.title,
         "description": meeting.description,
@@ -142,12 +141,12 @@ async def update_meeting(
         "account_id": meeting.account_id,
     }
     merged.update(data)
-    
+
     await _validate_meeting_payload(db, MeetingCreate(**merged), team_id=team_id)
-    
+
     for field, value in data.items():
         setattr(meeting, field, value)
-        
+
     await log_audit(
         db,
         action="meeting.updated",
@@ -173,9 +172,9 @@ async def mark_completed(
     meeting = await get_meeting_or_404(db, meeting_id, team_id=team_id)
     if meeting.status != "scheduled":
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only scheduled meetings can be completed.")
-        
+
     meeting.status = "completed"
-    
+
     await log_audit(
         db,
         action="meeting.completed",
@@ -187,10 +186,10 @@ async def mark_completed(
         metadata={},
     )
     await db.commit()
-    
+
     from app.services.automations import run_trigger
     await run_trigger(db, "meeting.completed", {"id": str(meeting.id), "meeting_type": meeting.meeting_type, "status": meeting.status, "contact_id": str(meeting.contact_id) if meeting.contact_id else None, "deal_id": str(meeting.deal_id) if meeting.deal_id else None, "account_id": str(meeting.account_id) if meeting.account_id else None}, team_id)
-    
+
     return meeting
 
 
@@ -205,9 +204,9 @@ async def cancel_meeting(
     meeting = await get_meeting_or_404(db, meeting_id, team_id=team_id)
     if meeting.status != "scheduled":
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only scheduled meetings can be cancelled.")
-        
+
     meeting.status = "cancelled"
-    
+
     await log_audit(
         db,
         action="meeting.cancelled",
@@ -231,7 +230,7 @@ async def delete_meeting(
 ) -> None:
     """Delete a meeting."""
     meeting = await get_meeting_or_404(db, meeting_id, team_id=team_id)
-    
+
     await log_audit(
         db,
         action="meeting.deleted",
@@ -255,24 +254,24 @@ async def generate_ics(
 ) -> str:
     """Generate an ICS file content for a meeting."""
     meeting = await get_meeting_or_404(db, meeting_id, team_id=team_id)
-    
+
     cal = Calendar()
     cal.add('prodid', '-//Acufy CRM//Calendar Hub//EN')
     cal.add('version', '2.0')
-    
+
     event = Event()
     event.add('summary', meeting.title)
     event.add('dtstart', meeting.starts_at)
     event.add('dtend', meeting.ends_at)
-    event.add('dtstamp', datetime.now(timezone.utc))
-    
+    event.add('dtstamp', datetime.now(UTC))
+
     if meeting.description:
         event.add('description', meeting.description)
     if meeting.location:
         event.add('location', meeting.location)
-        
+
     cal.add_component(event)
-    
+
     await log_audit(
         db,
         action="meeting.exported",
@@ -284,7 +283,7 @@ async def generate_ics(
         metadata={},
     )
     await db.commit()
-    
+
     return cal.to_ical().decode('utf-8')
 
 
@@ -295,17 +294,17 @@ async def _validate_meeting_payload(db: AsyncSession, payload: MeetingCreate, *,
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="ends_at must be strictly after starts_at.",
         )
-        
+
     if payload.contact_id is not None:
         contact = await db.get(Contact, payload.contact_id)
         if contact is None or contact.team_id != team_id:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found.")
-            
+
     if payload.deal_id is not None:
         deal = await db.get(Deal, payload.deal_id)
         if deal is None or deal.team_id != team_id:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Deal not found.")
-            
+
     if payload.account_id is not None:
         account = await db.get(Account, payload.account_id)
         if account is None or account.team_id != team_id:

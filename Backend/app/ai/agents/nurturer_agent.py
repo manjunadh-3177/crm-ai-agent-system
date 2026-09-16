@@ -11,12 +11,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.events import emit_event
-from app.models import AgentApproval, AuditLog, Contact, Deal, DealStage, Note
+from app.models import AgentApproval, AuditLog, Deal, DealStage, Note
 from app.schemas.ai import DraftEmailResponse
 from app.services.ai_email import generate_email_draft_content, persist_draft_and_approval
 from app.services.audit import log_audit
 from app.services.notifications import create_notification
-
 
 INACTIVE_AFTER_DAYS = 7
 RECENT_NURTURE_WINDOW_DAYS = 7

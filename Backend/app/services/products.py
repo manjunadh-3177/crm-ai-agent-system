@@ -7,13 +7,12 @@ from uuid import UUID
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Product, Team
 from app.schemas.crm import ProductCreate, ProductUpdate
 from app.services.audit import log_audit
-
 
 DEMO_PRODUCTS: list[dict[str, str | Decimal | None]] = [
     {

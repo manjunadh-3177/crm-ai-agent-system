@@ -21,11 +21,11 @@ class Note(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         nullable=False,
     )
     body: Mapped[str] = mapped_column(Text, nullable=False)
-    
+
     # Polymorphic association
     entity_type: Mapped[str] = mapped_column(String(50), nullable=False)
     entity_id: Mapped[UUID] = mapped_column(Uuid, nullable=False)
-    
+
     created_by_user_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     team: Mapped["Team"] = relationship("Team")

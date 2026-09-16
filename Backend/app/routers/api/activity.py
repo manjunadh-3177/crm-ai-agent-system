@@ -8,7 +8,6 @@ from app.core.db import get_db
 from app.schemas.crm import ActivityFeedItem
 from app.services.activity import get_activity_feed
 
-
 router = APIRouter(prefix="/activity-feed", tags=["activity"])
 
 

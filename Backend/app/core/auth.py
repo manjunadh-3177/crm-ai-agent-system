@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import time
 from dataclasses import dataclass
 from typing import Any
 from uuid import UUID
@@ -14,7 +13,6 @@ from sqlalchemy import select
 from app.core.config import Settings, get_settings
 from app.models import Team, User
 from app.services.products import seed_demo_products_if_empty
-
 
 OPEN_PATH_PREFIXES = ("/health", "/docs", "/redoc", "/openapi.json", "/ws", "/me", "/api/v1/twilio/webhook")
 VALID_ROLES = {"admin", "manager", "rep"}
@@ -103,7 +101,7 @@ async def resolve_websocket_auth_context(websocket: WebSocket) -> AuthContext:
     print("WS auth started")
     claims = await _validate_auth0_token(token, settings)
     print("JWT valid")
-    
+
     from app.core.db import AsyncSessionLocal
     async with AsyncSessionLocal() as session:
         context = await _auth_context_from_claims(claims, settings, session, auto_provision=False, token=token)
@@ -172,7 +170,7 @@ async def _validate_auth0_token(token: str, settings: Settings) -> dict[str, Any
     if domain not in _jwks_clients:
         url = f"https://{domain}/.well-known/jwks.json"
         _jwks_clients[domain] = PyJWKClient(url)
-        
+
     jwks_client = _jwks_clients[domain]
 
     try:
@@ -227,7 +225,7 @@ async def _get_auth0_email(token: str, domain: str, sub: str) -> str:
     """Fetch user email from Auth0 /userinfo if not present in access token."""
     if sub in _user_info_cache:
         return _user_info_cache[sub]
-        
+
     url = f"https://{domain}/userinfo"
     async with httpx.AsyncClient(timeout=5.0) as client:
         resp = await client.get(url, headers={"Authorization": f"Bearer {token}"})
@@ -247,18 +245,18 @@ async def _auth_context_from_claims(
     from app.services.seeding import seed_starter_data_if_empty
 
     user_id = str(claims.get("sub") or claims.get("user_id") or "")
-    
+
     # Try custom namespace first
     email = str(
-        claims.get(f"{settings.auth0_claims_namespace}/email") or 
-        claims.get("email") or 
+        claims.get(f"{settings.auth0_claims_namespace}/email") or
+        claims.get("email") or
         ""
     ).lower()
 
     if not email and user_id and token and settings.auth0_domain:
         email = await _get_auth0_email(token, settings.auth0_domain, user_id)
         email = email.lower()
-    
+
     if not user_id or not email:
         print(f"WS/HTTP Auth Rejected: Cannot resolve email for token. user_id={user_id}, email={email}")
         raise HTTPException(
@@ -270,7 +268,7 @@ async def _auth_context_from_claims(
     user = None
     if email:
         user = await session.scalar(select(User).where(User.email == email))
-    
+
     if user:
         team_id = user.team_id
         user_team = await session.get(Team, team_id)
@@ -302,9 +300,9 @@ async def _auth_context_from_claims(
             new_team = Team(name=team_name, timezone="UTC")
             session.add(new_team)
             await session.flush() # Get the new_team.id
-            
+
             team_id = new_team.id
-            
+
             new_user = User(
                 team_id=team_id,
                 email=email,
@@ -315,7 +313,7 @@ async def _auth_context_from_claims(
             await session.commit() # Commit user first!
             user = new_user
             print("User provisioned successfully")
-            
+
             # Also seed some initial data so it's not a ghost town
             try:
                 print("Starter seed started")

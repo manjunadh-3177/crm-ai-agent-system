@@ -5,11 +5,14 @@ from datetime import date
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.auth import AuthContext, get_auth_context, requires_role
+from app.core.auth import AuthContext, requires_role
 from app.core.db import get_db
 from app.schemas.crm import ReportsPerformanceRead, ReportsPipelineRead, ReportsSummaryRead
-from app.services.analytics import get_reports_performance, get_reports_pipeline, get_reports_summary
-
+from app.services.analytics import (
+    get_reports_performance,
+    get_reports_pipeline,
+    get_reports_summary,
+)
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 

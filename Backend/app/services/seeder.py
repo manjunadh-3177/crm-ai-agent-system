@@ -1,24 +1,23 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.account import Account
+from app.models.agent_approval import AgentApproval
 from app.models.contact import Contact
 from app.models.deal import Deal
 from app.models.deal_stage import DealStage
-from app.models.task import Task
-from app.models.meeting import Meeting
-from app.models.agent_approval import AgentApproval
 from app.models.email_draft import EmailDraft
-from app.models.notification import Notification
-from app.services.audit import log_audit
+from app.models.meeting import Meeting
+from app.models.task import Task
 from app.services.agent_runs import create_agent_run
+from app.services.audit import log_audit
 
 logger = logging.getLogger(__name__)
 
@@ -46,15 +45,15 @@ async def seed_current_workspace(db: AsyncSession, team_id: UUID, user_id: str) 
         {"name": "Skyline Ventures", "domain": "skyline.example.com", "industry": "Investment"},
         {"name": "GreenField Homes", "domain": "greenfield.example.com", "industry": "Real Estate"},
     ]
-    
+
     # Check if already seeded to prevent duplicates on rerun
     existing_accs = await db.execute(select(Account.domain).where(Account.team_id == team_id))
     existing_domains = {r for r in existing_accs.scalars()}
-    
+
     if "northstar-realty.example.com" in existing_domains:
         logger.info("Workspace already seeded, skipping to prevent duplicates.")
         return {"status": "skipped", "reason": "Already seeded"}
-    
+
     created_accounts = []
     for ad in accounts_data:
         account = Account(
@@ -65,7 +64,7 @@ async def seed_current_workspace(db: AsyncSession, team_id: UUID, user_id: str) 
         )
         db.add(account)
         created_accounts.append(account)
-    
+
     await db.flush()
 
     # 3. Contacts
@@ -98,7 +97,7 @@ async def seed_current_workspace(db: AsyncSession, team_id: UUID, user_id: str) 
     await db.flush()
 
     # 4. Deals
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     deals_data = [
         ("Northstar Expansion", created_accounts[0], created_contacts[0], "Proposal", Decimal("150000.00"), 60, 15),
         ("UrbanNest Renewal", created_accounts[1], created_contacts[1], "Lead", Decimal("50000.00"), 10, 45),
@@ -215,7 +214,7 @@ async def seed_current_workspace(db: AsyncSession, team_id: UUID, user_id: str) 
     # 9. History / Activity Feed & Swarm Console
     await log_audit(db, action="contact.created", entity_type="contact", entity_id=str(created_contacts[0].id), team_id=team_id, actor_type="user", actor_id=user_id)
     await log_audit(db, action="deal.stage_changed", entity_type="deal", entity_id=str(created_deals[0].id), team_id=team_id, actor_type="user", actor_id=user_id)
-    
+
     # Swarm console history
     run = await create_agent_run(
         db,

@@ -9,7 +9,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import AuthContext, get_auth_context
 from app.core.db import get_db
-from app.schemas.crm import SMSAssignContactRequest, SMSCreateTaskRequest, SMSMessageRead, SMSMessageSend
+from app.schemas.crm import (
+    SMSAssignContactRequest,
+    SMSCreateTaskRequest,
+    SMSMessageRead,
+    SMSMessageSend,
+)
 from app.services.sms import (
     assign_sms_contact,
     create_task_from_sms,
@@ -18,7 +23,6 @@ from app.services.sms import (
     mark_sms_read,
     queue_outbound_sms,
 )
-
 
 router = APIRouter(tags=["sms"])
 

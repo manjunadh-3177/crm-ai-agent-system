@@ -12,20 +12,28 @@ from sqlalchemy.orm import selectinload
 
 from app.events import emit_event
 from app.jobs import enqueue_background_job
-from app.models import Account, Contact, Deal, DealContactRole, DealLineItem, DealStage, Product, Team, User
+from app.models import (
+    Account,
+    Contact,
+    Deal,
+    DealContactRole,
+    DealLineItem,
+    DealStage,
+    Product,
+    Team,
+    User,
+)
 from app.schemas.crm import (
-    DealCreate,
     DealContactRoleCreate,
     DealContactRoleUpdate,
+    DealCreate,
     DealLineItemCreate,
     DealLineItemUpdate,
-    DealStageUpdate,
     DealStageUpdate,
     DealUpdate,
 )
 from app.services.audit import log_audit
 from app.services.seeding import seed_pipeline_data_if_empty
-
 
 DECIMAL_ZERO = Decimal("0.00")
 
@@ -261,7 +269,12 @@ async def update_deal_stage(
     from app.services.automations import run_trigger
     await run_trigger(db, "deal.stage_changed", {"id": str(updated_deal.id), "amount": float(updated_deal.amount) if updated_deal.amount else 0.0, "stage": updated_deal.stage.name if updated_deal.stage else None, "contact_id": str(updated_deal.contact_id) if updated_deal.contact_id else None, "account_id": str(updated_deal.account_id) if updated_deal.account_id else None}, team_id)
 
-    from app.ai.graphs.crm_orchestration import DEAL_RESCUE_GRAPH, PROPOSAL_GRAPH, run_deal_rescue_graph, run_proposal_graph
+    from app.ai.graphs.crm_orchestration import (
+        DEAL_RESCUE_GRAPH,
+        PROPOSAL_GRAPH,
+        run_deal_rescue_graph,
+        run_proposal_graph,
+    )
     rescue_queue = await enqueue_background_job(
         "crm_graph_job",
         DEAL_RESCUE_GRAPH,

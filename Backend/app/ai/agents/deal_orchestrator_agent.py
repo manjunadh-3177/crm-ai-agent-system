@@ -1,13 +1,15 @@
 """Deal Orchestrator Agent for automatic health monitoring."""
 
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime
 from uuid import UUID
+
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.events import emit_event
 from app.models.deal import Deal
 from app.models.task import Task
 from app.services.audit import log_audit
-from app.events import emit_event
 from app.services.notifications import create_notification
 
 logger = logging.getLogger(__name__)
@@ -19,12 +21,12 @@ def analyze_deal_health(deal: Deal) -> tuple[str, str]:
     7-13 = at_risk
     14+ = stalled
     """
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     # Handle naive vs aware datetime if needed, but updated_at should be aware
     updated_at = deal.updated_at
     if updated_at.tzinfo is None:
-        updated_at = updated_at.replace(tzinfo=timezone.utc)
-    
+        updated_at = updated_at.replace(tzinfo=UTC)
+
     delta = now - updated_at
     days_inactive = delta.days
 
@@ -43,10 +45,10 @@ async def run_deal_orchestrator(db: AsyncSession, deal_id: UUID, team_id: UUID) 
             return
 
         health, reason = analyze_deal_health(deal)
-        
+
         deal.deal_health = health
         deal.deal_reason = reason
-        
+
         await db.flush()
 
         # Audit log
@@ -74,7 +76,7 @@ async def run_deal_orchestrator(db: AsyncSession, deal_id: UUID, team_id: UUID) 
             )
             db.add(new_task)
             await db.flush()
-            
+
             await log_audit(
                 db,
                 action="task.created",
@@ -98,7 +100,7 @@ async def run_deal_orchestrator(db: AsyncSession, deal_id: UUID, team_id: UUID) 
 
         await db.commit()
         await emit_event("deal.updated", {"id": str(deal_id), "team_id": str(team_id)})
-        
+
     except Exception as e:
         logger.error(f"Error in deal_orchestrator_agent: {e}")
         await db.rollback()

@@ -1,7 +1,6 @@
 """Schemas for AI gateway endpoints."""
 
-from datetime import date
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal
 from uuid import UUID
 

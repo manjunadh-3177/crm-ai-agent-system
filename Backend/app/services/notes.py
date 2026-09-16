@@ -23,12 +23,12 @@ async def list_notes(
 ) -> list[Note]:
     """Return notes for a team, optionally filtered by entity."""
     query = select(Note).where(Note.team_id == team_id)
-    
+
     if entity_type:
         query = query.where(Note.entity_type == entity_type)
     if entity_id:
         query = query.where(Note.entity_id == entity_id)
-        
+
     query = query.order_by(Note.created_at.desc())
     result = await db.execute(query)
     return list(result.scalars().all())
@@ -55,7 +55,7 @@ async def create_note(
     note = Note(team_id=team_id, created_by_user_id=actor_id, **payload.model_dump())
     db.add(note)
     await db.flush()
-    
+
     await log_audit(
         db,
         action="note.created",
@@ -70,7 +70,7 @@ async def create_note(
         },
     )
     await db.commit()
-    
+
     await emit_event("note.created", {"id": str(note.id), "team_id": str(team_id)})
     return note
 
@@ -86,10 +86,10 @@ async def update_note(
     """Update an existing note."""
     note = await get_note_or_404(db, note_id, team_id=team_id)
     data = payload.model_dump(exclude_unset=True)
-    
+
     for field, value in data.items():
         setattr(note, field, value)
-        
+
     await log_audit(
         db,
         action="note.updated",
@@ -101,7 +101,7 @@ async def update_note(
         metadata={"updated_fields": list(data.keys())},
     )
     await db.commit()
-    
+
     await emit_event("note.updated", {"id": str(note.id), "team_id": str(team_id)})
     return note
 
@@ -115,7 +115,7 @@ async def delete_note(
 ) -> None:
     """Delete a note."""
     note = await get_note_or_404(db, note_id, team_id=team_id)
-    
+
     await log_audit(
         db,
         action="note.deleted",
@@ -128,5 +128,5 @@ async def delete_note(
     )
     await db.delete(note)
     await db.commit()
-    
+
     await emit_event("note.deleted", {"id": str(note_id), "team_id": str(team_id)})

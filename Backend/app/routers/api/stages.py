@@ -10,7 +10,6 @@ from app.models import DealStage
 from app.schemas.crm import DealStageRead
 from app.services.seeding import ensure_default_pipeline_stages
 
-
 router = APIRouter(tags=["stages"])
 
 

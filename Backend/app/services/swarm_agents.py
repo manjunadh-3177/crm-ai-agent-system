@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
 from time import perf_counter
-from typing import Any, Awaitable, Callable
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import func, or_, select
@@ -20,11 +21,10 @@ from app.ai.agents.proposal_agent import run_proposal_agent
 from app.ai.agents.research_agent import research_account, research_contact
 from app.ai.agents.scheduler_agent import suggest_slots
 from app.events import emit_event
-from app.models import AgentApproval, Account, AuditLog, Contact, Deal, DealStage, Document, Task
+from app.models import Account, AgentApproval, AuditLog, Contact, Deal, DealStage, Document, Task
 from app.schemas.ai import DraftEmailResponse
 from app.services.agent_runs import create_agent_run
 from app.services.audit import log_audit
-
 
 ManualRunner = Callable[[AsyncSession, UUID, str | None], Awaitable[dict[str, Any]]]
 

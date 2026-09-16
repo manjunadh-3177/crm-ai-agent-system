@@ -40,5 +40,5 @@ class AutomationRule(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     run_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     last_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    team: Mapped["Team"] = relationship("Team")
+    team: Mapped[Team] = relationship("Team")
 
