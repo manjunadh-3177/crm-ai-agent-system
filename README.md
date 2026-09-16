@@ -126,6 +126,7 @@ A manual-trigger `deploy.yml` workflow exists as a placeholder for a future clou
 
 ## Known limitations / next steps
 
-- Frontend currently ships as a small number of large files rather than being split by route; a router-based restructuring is planned.
-- Test coverage is currently limited to a health-check smoke test; expanding coverage of the agent graphs and approval flow is the next priority.
+- Frontend is organized into per-page components (`src/pages/`) and reusable components/modals (`src/components/`), but doesn't yet use a router — page switching is handled by local state rather than URL-based routing.
+- Test coverage currently covers core business logic (compliance checks, lead scoring) and the health endpoint; expanding coverage to the agent graphs and full approval flow end-to-end is the next priority.
 - No production deployment is live yet — Docker Compose covers local/single-host use.
+- The app has not yet been run and manually verified end-to-end (Docker Compose up, clicking through each page); only static compilation, type-checking, and unit tests have been verified so far.
