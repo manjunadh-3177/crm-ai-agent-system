@@ -1,5 +1,7 @@
 # Acufy CRM
 
+[![CI](https://github.com/manjunadh-3177/crm-ai-agent-system/actions/workflows/ci.yml/badge.svg)](https://github.com/manjunadh-3177/crm-ai-agent-system/actions/workflows/ci.yml)
+
 An AI-augmented CRM where a multi-agent system does the busywork of sales follow-up — lead qualification, contact research, email drafting, deal-rescue detection, and proposal generation — while every AI-generated action pauses for human approval before it goes out.
 
 ## The problem
